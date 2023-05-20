@@ -127,8 +127,12 @@ class ArgProcessor(DataProcessor):
             guid = "%s-%s" % (set_type, i)
             if len(line)>=2:
                 text_a = line[0]
-                text_b = line[1]
-                label = line[2] #"0" if (line[1]=='0' or line[1]=='1')  else "1"
+                if (len(line) == 2):
+                    text_b = None
+                    label = "0" if (line[1]=='0' or line[1]=='1')  else "1"
+                else:
+                    text_b = line[1]
+                    label = line[2] #"0" if (line[1]=='0' or line[1]=='1')  else "1"
                 examples.append(
                     InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label))
         return examples
@@ -495,7 +499,7 @@ def main():
         if args.local_rank != -1:
             num_train_optimization_steps = num_train_optimization_steps // torch.distributed.get_world_size()
 
-    model_state_dict = torch.load('./models/pytorch_model.bin')
+    model_state_dict = torch.load('./models/pytorch_model.bin', map_location=device)
     cache_dir = args.cache_dir if args.cache_dir else os.path.join(PYTORCH_PRETRAINED_BERT_CACHE, 'distributed_{}'.format(args.local_rank))
     model = BertForSequenceClassification.from_pretrained(args.bert_model,state_dict= model_state_dict,num_labels = num_labels)
     #model.load_state_dict(torch.load('./models/pytorch_model1.bin'))
